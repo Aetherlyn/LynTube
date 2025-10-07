@@ -41,20 +41,22 @@ def set_download_folder(folder):
 
 
 #Button functions
-def dwn_highest(url, status_label, p_bar, p_per,):
+def dwn_with_resolution(url, status_label, p_bar, p_per, resolution):
     folder = get_download_folder() or os.getcwd()
     try:
         def progress_callback(stream, chunk, bytes_remaining):
             bar_progress(stream, chunk, bytes_remaining, p_bar, p_per)
 
         yt = YouTube(url, on_progress_callback=progress_callback)
-        
 
-        video_stream = yt.streams.filter(adaptive=True, file_extension='mp4', type='video').order_by('resolution').desc().first()
-        audio_stream = yt.streams.filter(only_audio=True, file_extension='mp4').first()
-
-        if not video_stream or not audio_stream:
+        video_stream = yt.streams.filter(res=resolution).first()
+        if not video_stream:
             status_label.configure(text="No suitable streams found.", text_color="#FF0000")
+            return
+
+        audio_stream = yt.streams.filter(only_audio=True).first()
+        if not audio_stream:
+            status_label.configure(text="No suitable audio stream found.", text_color="#FF0000")
             return
 
         base_name = yt.title.replace("/", "_").replace("\\", "_")
@@ -69,15 +71,11 @@ def dwn_highest(url, status_label, p_bar, p_per,):
         audio_stream.download(output_path=folder, filename=f"{base_name}_audio.mp4")
 
         status_label.configure(text="Merging video and audio...", text_color="#AAAAAA")
-        ffmpeg_path = get_ffmpeg_path() 
+        ffmpeg_path = get_ffmpeg_path()
         merge_cmd = [ffmpeg_path, "-y", "-i", video_path, "-i", audio_path, "-c", "copy", output_path]
-      
-        try:
-            subprocess.run(merge_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            status_label.configure(text="Download Complete", text_color="#00FF00")
-        except FileNotFoundError:
-            status_label.configure(text="FFmpeg not found. Please install FFmpeg.", text_color="#FF0000")
-            return
+
+        subprocess.run(merge_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        status_label.configure(text="Download Complete", text_color="#00FF00")
 
         if os.path.exists(video_path):
             os.remove(video_path)
@@ -96,8 +94,8 @@ def dwn_audio(url, status_label, p_bar, p_per):
             bar_progress(stream, chunk, bytes_remaining, p_bar, p_per)
 
         yt = YouTube(url, on_progress_callback=progress_callback)
-        audio = yt.streams.get_audio_only()
-        audio.download(output_path=folder)
+        audio_stream = yt.streams.filter(only_audio=True, file_extension='mp3').first()
+        audio_stream.download(output_path=folder)
         status_label.configure(text="Audio Download Complete", text_color="#00FF00")
     except:
         status_label.configure(text="Download Error: Invalid URL", text_color="#FF0000")
