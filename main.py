@@ -12,7 +12,6 @@ app = ctk.CTk()
 app.title("LynTube")
 app.geometry("700x350")
 
-
 #Link Bar
 url = tk.StringVar()
 link_space = ctk.CTkEntry(app, placeholder_text= "Enter Youtube URL", width=350, height=40, textvariable = url)
