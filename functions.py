@@ -94,19 +94,29 @@ def dwn_audio(url, status_label, p_bar, p_per):
             bar_progress(stream, chunk, bytes_remaining, p_bar, p_per)
 
         yt = YouTube(url, on_progress_callback=progress_callback)
-        audio_stream = yt.streams.filter(only_audio=True, file_extension='mp3').first()
+        audio_stream = yt.streams.filter(only_audio=True, file_extension='mp4').first()
         audio_stream.download(output_path=folder)
         status_label.configure(text="Audio Download Complete", text_color="#00FF00")
     except:
         status_label.configure(text="Download Error: Invalid URL", text_color="#FF0000")
 
+#Percentage functions
+def format_size(bytes_amount):
+    for byte in ['B', 'KB', 'MB', 'GB', 'TB']:
+        if bytes_amount < 1024:
+            return f"{bytes_amount:.2f} {byte}"
+        bytes_amount /= 1024
+    return f"{bytes_amount:.2f} PB"
 
 def bar_progress(stream, chunk, bytes_remaining, p_bar, p_per):
     total_size = stream.filesize
     bytes_downloaded = total_size - bytes_remaining
     percentage_completion = bytes_downloaded / total_size * 100
 
-    p_per.configure(text=f"{int(percentage_completion)}%")
+    downloaded_file = format_size(bytes_downloaded)
+    total_file = format_size(total_size)
+
+    p_per.configure(text=f"{int(percentage_completion)}% ({downloaded_file} / {total_file})")
     p_per.update()
 
     p_bar.set(percentage_completion / 100)
