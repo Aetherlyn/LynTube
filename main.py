@@ -1,3 +1,4 @@
+import threading
 from functions import *
 import tkinter as tk
 import customtkinter as ctk
@@ -33,24 +34,29 @@ status_text.pack()
 res_frame = ctk.CTkFrame(app)
 res_frame.pack(pady=5)
 
+def threaded_dwn(target_function, *args):
+    thread = threading.Thread(target=target_function, args=args)
+    thread.daemon = True
+    thread.start()
+
 def download_2160p():
-    dwn_with_resolution(link_space.get(), status_text, p_bar, p_per, "2160p")
+    threaded_dwn(dwn_with_resolution, link_space.get(), status_text, p_bar, p_per, "2160p")
 ctk.CTkButton(res_frame, text="2160p", width=60, command=download_2160p).grid(row=0, column=0, padx=5) 
 
 def download_1440p():
-    dwn_with_resolution(link_space.get(), status_text, p_bar, p_per, "1440p")
+    threaded_dwn(dwn_with_resolution, link_space.get(), status_text, p_bar, p_per, "1440p")
 ctk.CTkButton(res_frame, text="1440p", width=60, command=download_1440p).grid(row=0, column=1, padx=5) 
 
 def download_1080p():
-    dwn_with_resolution(link_space.get(), status_text, p_bar, p_per, "1080p")
+    threaded_dwn(dwn_with_resolution, link_space.get(), status_text, p_bar, p_per, "1080p")
 ctk.CTkButton(res_frame, text="1080p", width=60, command=download_1080p).grid(row=0, column=2, padx=5)
 
 def download_720p():
-    dwn_with_resolution(link_space.get(), status_text, p_bar, p_per, "720p")
+    threaded_dwn(dwn_with_resolution, link_space.get(), status_text, p_bar, p_per, "720p")
 ctk.CTkButton(res_frame, text="720p", width=60, command=download_720p).grid(row=0, column=3, padx=5)
 
 def download_480p():
-    dwn_with_resolution(link_space.get(), status_text, p_bar, p_per, "480p")
+    threaded_dwn(dwn_with_resolution, link_space.get(), status_text, p_bar, p_per, "480p")
 ctk.CTkButton(res_frame, text="480p", width=60, command=download_480p).grid(row=0, column=4, padx=5)
 
 button_frame = ctk.CTkFrame(app)
