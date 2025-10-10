@@ -11,3 +11,5 @@ Usage:
 Run the program.
 
 Paste a YouTube link and choose one of the download options.
+
+<img width="670" height="435" alt="image" src="https://github.com/user-attachments/assets/fdcc398f-4b91-414e-9768-b2c9f93c9564" />
