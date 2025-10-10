@@ -13,7 +13,7 @@ ctk.set_default_color_theme("blue")
 #Frame
 app = ctk.CTk()
 app.title("LynTube")
-app.geometry("700x350")
+app.geometry("550x350")
 
 #Link Bar
 url = tk.StringVar()
@@ -104,7 +104,7 @@ def open_settings():
         app.after(2000, lambda: Folder_Text.configure(text=f"Current folder: {current_folder}", text_color="#AAAAAA"))
         
 settings_button = ctk.CTkButton(app, text="⚙️", width=40, height=40, command=open_settings)
-settings_button.pack(pady=5)
+settings_button.pack(padx= 15, pady=15)
 download_buttons.append(settings_button)
 
 Folder_Text = ctk.CTkLabel(app, text="")
