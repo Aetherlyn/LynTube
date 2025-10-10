@@ -1,9 +1,9 @@
 import os
+import re
 import sys
 import json
 import subprocess
 from pytubefix import YouTube
-from pytubefix.cli import on_progress
 
 CONFIG_FILE = "config.json"
 
@@ -43,6 +43,7 @@ def set_download_folder(folder):
 #Button functions
 def dwn_with_resolution(url, status_label, p_bar, p_per, resolution):
     folder = get_download_folder() or os.getcwd()
+
     try:
         def progress_callback(stream, chunk, bytes_remaining):
             bar_progress(stream, chunk, bytes_remaining, p_bar, p_per)
@@ -51,7 +52,7 @@ def dwn_with_resolution(url, status_label, p_bar, p_per, resolution):
 
         video_stream = yt.streams.filter(res=resolution).first()
         if not video_stream:
-            status_label.configure(text="No suitable streams found.", text_color="#FF0000")
+            status_label.configure(text="No suitable video stream found.", text_color="#FF0000")
             return
 
         audio_stream = yt.streams.filter(only_audio=True).first()
@@ -59,7 +60,7 @@ def dwn_with_resolution(url, status_label, p_bar, p_per, resolution):
             status_label.configure(text="No suitable audio stream found.", text_color="#FF0000")
             return
 
-        base_name = yt.title.replace("/", "_").replace("\\", "_")
+        base_name = re.sub(r'[<>:"/\\|?*]', '', yt.title)
         video_path = os.path.join(folder, f"{base_name}_video.mp4")
         audio_path = os.path.join(folder, f"{base_name}_audio.mp4")
         output_path = os.path.join(folder, f"{base_name}.mp4")
@@ -70,11 +71,22 @@ def dwn_with_resolution(url, status_label, p_bar, p_per, resolution):
         status_label.configure(text="Downloading audio...", text_color="#AAAAAA")
         audio_stream.download(output_path=folder, filename=f"{base_name}_audio.mp4")
 
+        if not (os.path.exists(video_path) and os.path.exists(audio_path)):
+            status_label.configure(text="Error: One or both media files missing.", text_color="#FF0000")
+            return
+
         status_label.configure(text="Merging video and audio...", text_color="#AAAAAA")
         ffmpeg_path = get_ffmpeg_path()
-        merge_cmd = [ffmpeg_path, "-y", "-i", video_path, "-i", audio_path, "-c", "copy", output_path]
+        merge_cmd = [
+            ffmpeg_path, "-y",
+            "-i", video_path,
+            "-i", audio_path,
+            "-c", "copy",
+            output_path
+        ]
 
         subprocess.run(merge_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
         status_label.configure(text="Download Complete", text_color="#00FF00")
 
         if os.path.exists(video_path):
@@ -82,9 +94,8 @@ def dwn_with_resolution(url, status_label, p_bar, p_per, resolution):
         if os.path.exists(audio_path):
             os.remove(audio_path)
 
-    except:
-        status_label.configure(text="Download Error: Invalid URL", text_color="#FF0000")
-        
+    except Exception as e:
+        status_label.configure(text=f"Download Error: {str(e)}", text_color="#FF0000")
 
 
 def dwn_audio(url, status_label, p_bar, p_per):
@@ -97,8 +108,8 @@ def dwn_audio(url, status_label, p_bar, p_per):
         audio_stream = yt.streams.filter(only_audio=True, file_extension='mp4').first()
         audio_stream.download(output_path=folder)
         status_label.configure(text="Audio Download Complete", text_color="#00FF00")
-    except:
-        status_label.configure(text="Download Error: Invalid URL", text_color="#FF0000")
+    except Exception as e:
+        status_label.configure(text=f"Download Error: {str(e)}", text_color="#FF0000")
 
 #Percentage functions
 def format_size(bytes_amount):
