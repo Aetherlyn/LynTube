@@ -2,11 +2,11 @@
 
 LynTube is a small experimental project for personal use that lets you download YouTube videos. It is not intended for commercial use.
 
-Requirements:
+# Requirements
 
 A standalone executable of FFmpeg for proper functionality. (www.ffmpeg.org)
 
-Usage:
+# Usage
 
 Run the program.
 
